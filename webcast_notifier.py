@@ -1,7 +1,9 @@
 from __future__ import print_function
-import urllib2, os, sys, time
+import urllib2, os, sys, time, smtplib
 from datetime import datetime
 import feedparser
+
+import secrets
 
 def get_playlist_id(webcast_url):
     return webcast_url.split("#")[1].split(",")[-1]
@@ -52,7 +54,6 @@ def update_cache_time(webcast_url):
 
 def check_new(webcast_url):
     feed = fetch_feed(webcast_url)
-
     last_updated = get_last_updated_time(webcast_url)
     num_new = 0
 
@@ -61,9 +62,39 @@ def check_new(webcast_url):
             num_new += 1
 
     if num_new > 0:
-        print("%s new ones!" % num_new)
+        print("Found %s new ones." % num_new)
+        send_email(feed['feed'].title, num_new)
 
     update_cache_time(webcast_url)
+
+def pluralize(num):
+    if num == 1:
+        return ''
+    return 's'
+
+def send_email(feed_title, new_items):
+    gmail_user = secrets.EMAIL_USER
+    gmail_pwd = secrets.EMAIL_PASS
+    FROM = "Webcast Notifier <%s>" % gmail_user
+    TO = [secrets.TO_EMAIL] #must be a list
+    SUBJECT = "%s new video%s in %s!" % (new_items, pluralize(new_items), feed_title)
+    TEXT = "EOM"
+
+    # Prepare actual message
+    message = """\From: %s\nTo: %s\nSubject: %s\n\n%s
+    """ % (FROM, ", ".join(TO), SUBJECT, TEXT)
+    try:
+        #server = smtplib.SMTP(SERVER) 
+        server = smtplib.SMTP("smtp.gmail.com", 587) #or port 465 doesn't seem to work!
+        server.ehlo()
+        server.starttls()
+        server.login(gmail_user, gmail_pwd)
+        server.sendmail(FROM, TO, message)
+        #server.quit()
+        server.close()
+    except:
+        print("failed to send mail")
+
 
 if __name__ == '__main__':
     if len(sys.argv) < 2:
