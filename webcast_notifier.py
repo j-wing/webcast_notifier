@@ -31,7 +31,7 @@ def fetch_feed(webcast_url):
     return feedparser.parse(response.read())
 
 def get_cache_path(playlist_id):
-    return os.path.join(os.path.dirname(__file__), ".%s" % playlist_id)
+    return os.path.join(os.path.dirname(__file__), ".cache-%s" % playlist_id)
 
 def get_last_updated_time(webcast_url):
     pl_id = get_playlist_id(webcast_url)
