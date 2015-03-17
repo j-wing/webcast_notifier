@@ -62,7 +62,6 @@ def check_new(webcast_url):
             num_new += 1
 
     if num_new > 0:
-        print("Found %s new ones." % num_new)
         send_email(feed['feed'].title, num_new)
 
     update_cache_time(webcast_url)
