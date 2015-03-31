@@ -56,14 +56,14 @@ def update_cache_time(webcast_url):
 def check_new(webcast_url):
     feed = fetch_feed(webcast_url)
     last_updated = get_last_updated_time(webcast_url)
-    num_new = 0
+    new_items = []
 
     for entry in feed.entries:
         if datetime.fromtimestamp(time.mktime(entry.published_parsed)) > last_updated:
-            num_new += 1
+            new_items.append(entry)
 
-    if num_new > 0:
-        send_email(feed['feed'].title, num_new)
+    if len(new_items) > 0:
+        send_email(feed['feed'].title, new_items)
 
     update_cache_time(webcast_url)
 
@@ -77,8 +77,9 @@ def send_email(feed_title, new_items):
     gmail_pwd = secrets.EMAIL_PASS
     FROM = "Webcast Notifier <%s>" % gmail_user
     TO = [secrets.TO_EMAIL] #must be a list
-    SUBJECT = "%s new video%s in %s!" % (new_items, pluralize(new_items), feed_title)
-    TEXT = "EOM"
+    num_new_items = len(new_items)
+    SUBJECT = "%s new video%s in %s!" % (num_new_items, pluralize(num_new_items), feed_title)
+    TEXT = "\n".join([entry.link for entry in new_items])
 
     # Prepare actual message
     message = """\From: %s\nTo: %s\nSubject: %s\n\n%s
