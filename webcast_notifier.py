@@ -1,3 +1,4 @@
+#!/usr/bin/python
 from __future__ import print_function
 import urllib2, os, sys, time, smtplib
 from datetime import datetime
@@ -58,7 +59,7 @@ def check_new(webcast_url):
     num_new = 0
 
     for entry in feed.entries:
-        if datetime.fromtimestamp(time.mktime(entry.updated_parsed)) > last_updated:
+        if datetime.fromtimestamp(time.mktime(entry.published_parsed)) > last_updated:
             num_new += 1
 
     if num_new > 0:
